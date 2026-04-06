@@ -30,3 +30,54 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+**Configure the PostgreSQL Database:**
+Ensure your local PostgreSQL service is running, then execute the following commands in the psql console to create the database and user:
+
+```SQL
+
+CREATE DATABASE telematics;
+CREATE USER api_user WITH PASSWORD 'secret123';
+GRANT ALL ON SCHEMA public TO api_user; 3. Run the Application:
+Start the FastAPI server. The application will automatically connect to the MQTT broker and begin listening for telemetry.
+```
+
+```bash
+cd app
+uvicorn main:app --reload
+```
+
+## Start the Simulator:
+
+In a separate terminal window, activate your virtual environment and start the OBD-II simulator to begin pushing data.
+
+```bash
+python3 obd_ii_simulator.py
+```
+
+**API Endpoints**
+Once running, interactive API documentation is available at http://127.0.0.1:8000/docs.
+
+Telemetry Queries
+GET /vehicles/{vin}/latest
+Fetches the single most recent telemetry reading for a specified vehicle.
+
+GET /vehicles/{vin}/history?from={timestamp}&to={timestamp}
+Retrieves a historical array of telemetry data within a specific ISO 8601 UTC time window.
+
+Alert Configuration
+POST /vehicles/{vin}/alert-config
+Creates a new monitoring rule for a vehicle.
+Payload Example: {"metric": "speed", "threshold": 120.0}
+
+Background Processes
+The application runs a continuous asynchronous task (threshold_scanner) that wakes up every 30 seconds. It cross-references the latest telemetry against all user-defined alert configurations in the database. If a vehicle exceeds a defined threshold (e.g., speed > 120), a critical alert is logged to the system terminal.
+
+Built With
+FastAPI - The web framework
+
+SQLAlchemy - Database ORM
+
+Paho-MQTT (v2.0+) - IoT Messaging protocol
+
+PostgreSQL - Relational Database
