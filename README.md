@@ -38,9 +38,11 @@ Ensure your local PostgreSQL service is running, then execute the following comm
 
 CREATE DATABASE telematics;
 CREATE USER api_user WITH PASSWORD 'secret123';
-GRANT ALL ON SCHEMA public TO api_user; 3. Run the Application:
-Start the FastAPI server. The application will automatically connect to the MQTT broker and begin listening for telemetry.
+GRANT ALL ON SCHEMA public TO api_user;
 ```
+
+**Run the Application:**
+Start the FastAPI server. The application will automatically connect to the MQTT broker and begin listening for telemetry.
 
 ```bash
 cd app
