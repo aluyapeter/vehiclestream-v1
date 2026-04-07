@@ -1,8 +1,8 @@
 import time
 import json
-import paho.mqtt.client as mqtt
+from paho.mqtt import client as mqtt_client
 
-BROKER = "test.mosquitto.org"
+BROKER = "broker.emqx.io"
 PORT = 1883
 TOPIC = "vehicle/+/telemetry"
 
@@ -29,7 +29,7 @@ def on_message(client, userdata, msg):
         print(f"Error processing message: {e}")
 
 if __name__ == "__main__":
-    client = mqtt.Client()
+    client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1) #type: ignore
     client.on_connect = on_connect
     client.on_message = on_message
 

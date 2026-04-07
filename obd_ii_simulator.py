@@ -1,10 +1,10 @@
 import time
 import json
 import random
-import paho.mqtt.client as mqtt
+from paho.mqtt import client as mqtt_client
 
 VIN = "TESTVIN1234567890"
-BROKER = "test.mosquitto.org"
+BROKER = "broker.emqx.io"
 PORT = 1883
 TOPIC = f"vehicle/{VIN}/telemetry"
 
@@ -45,14 +45,21 @@ def get_simulated_readings(state):
 
     return {k: v for k, v in state.items() if k != "drive_mode"}
     
-client = mqtt.Client()
+client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1) #type: ignore
+
+def on_publish(client, userdata, mid):
+    print("✨ Data actually left the building and reached the broker!") 
+
+client.on_publish = on_publish
 
 print(f"Connecting to broker: {BROKER}...")
 client.connect(BROKER, PORT, 60)
+client.loop_start()
 
 if __name__ == "__main__":
     print(f"Starting OBD-II Simulator for VIN: {VIN}")
     print(f"Publishing to broker: {BROKER} on topic: {TOPIC}")
+    
     
     try:
         while True:

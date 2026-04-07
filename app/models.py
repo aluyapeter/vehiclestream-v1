@@ -7,7 +7,7 @@ class Telemetry(Base):
     __tablename__ = "telemetry_readings"
 
     id = Column(Integer, primary_key=True, index=True)
-    vin = Column(String, index=True) # Indexed because we will query by VIN often
+    vin = Column(String, index=True)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     speed = Column(Float)
     rpm = Column(Integer)
@@ -19,5 +19,5 @@ class AlertConfig(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     vin = Column(String, index=True)
-    metric = Column(String)    # e.g., 'speed' or 'rpm'
-    threshold = Column(Float)  # e.g., 120.0
+    metric = Column(String)
+    threshold = Column(Float)

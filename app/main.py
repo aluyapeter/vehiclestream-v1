@@ -62,7 +62,7 @@ async def threshold_scanner():
                     .first()
                 
                 if latest_reading:
-                    current_value = getattr(latest_reading, rule.metric, None)
+                    current_value = getattr(latest_reading, rule.metric, None) #type: ignore
                     
                     if current_value is not None and current_value > rule.threshold:
                         print("\n" + "!"*50)
@@ -78,7 +78,7 @@ async def threshold_scanner():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.mqtt_client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1)
+    app.state.mqtt_client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1) #type: ignore
     
     app.state.mqtt_client.on_connect = on_connect
     app.state.mqtt_client.on_message = on_message
