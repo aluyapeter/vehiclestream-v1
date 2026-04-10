@@ -17,8 +17,6 @@ class AlertConfigRequest(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 def on_message(client, userdata, msg):
-    # Proof that data is arriving at the app level
-    # print(f"📩 Incoming message on topic: {msg.topic}")
     db = SessionLocal()
 
     try:
@@ -40,31 +38,12 @@ def on_message(client, userdata, msg):
         print(f"Error saving data: {e}")
     finally:
         db.close()
-    
-    # try:
-    #     payload = json.loads(msg.payload.decode('utf-8'))
-    #     vin = msg.topic.split('/')[1]
-        
-    #     db = SessionLocal()
-    #     new_reading = models.Telemetry(
-    #         vin=vin,
-    #         speed=payload.get("speed"),
-    #         rpm=payload.get("rpm"),
-    #         coolant_temp=payload.get("coolant_temp"),
-    #         battery_voltage=payload.get("battery_voltage")
-    #     )
-    #     db.add(new_reading)
-    #     db.commit()
-    #     db.close()
-    #     print(f"✅ Saved telemetry for {vin}")
-    # except Exception as e:
-    #     print(f"Error saving data: {e}")
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("✅ SUCCESS: FastAPI MQTT Client connected to broker.")
+        print(" SUCCESS: FastAPI MQTT Client connected to broker.")
         client.subscribe("vehicle/+/telemetry")
-        print("📡 Subscribed to vehicle/+/telemetry")
+        print(" Subscribed to vehicle/+/telemetry")
     else:
         print(f" ERROR: Connection failed with code {rc}")
 
@@ -155,8 +134,7 @@ def configure_alert(vin: str, config: AlertConfigRequest, db: Session = Depends(
 
 @app.get("/vehicles/{vin}/history")
 def get_telemetry_history(
-    vin: str, 
-    # Use aliases to map the URL parameters to safe Python variable names
+    vin: str,
     start_time: datetime = Query(..., alias="from"), 
     end_time: datetime = Query(..., alias="to"),
     db: Session = Depends(get_db)
