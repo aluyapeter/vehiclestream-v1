@@ -8,9 +8,10 @@ from datetime import datetime
 import models
 from database import engine, SessionLocal, get_db
 from pydantic import BaseModel
+from typing import Literal
 
 class AlertConfigRequest(BaseModel):
-    metric: str
+    metric: Literal["speed", "rpm", "coolant_temp", "battery_voltage"]
     threshold: float
 
 models.Base.metadata.create_all(bind=engine)
@@ -18,12 +19,12 @@ models.Base.metadata.create_all(bind=engine)
 def on_message(client, userdata, msg):
     # Proof that data is arriving at the app level
     # print(f"📩 Incoming message on topic: {msg.topic}")
-    
+    db = SessionLocal()
+
     try:
         payload = json.loads(msg.payload.decode('utf-8'))
         vin = msg.topic.split('/')[1]
-        
-        db = SessionLocal()
+
         new_reading = models.Telemetry(
             vin=vin,
             speed=payload.get("speed"),
@@ -33,10 +34,31 @@ def on_message(client, userdata, msg):
         )
         db.add(new_reading)
         db.commit()
-        db.close()
-        # print(f"✅ Saved telemetry for {vin}")
+
     except Exception as e:
+        db.rollback()
         print(f"Error saving data: {e}")
+    finally:
+        db.close()
+    
+    # try:
+    #     payload = json.loads(msg.payload.decode('utf-8'))
+    #     vin = msg.topic.split('/')[1]
+        
+    #     db = SessionLocal()
+    #     new_reading = models.Telemetry(
+    #         vin=vin,
+    #         speed=payload.get("speed"),
+    #         rpm=payload.get("rpm"),
+    #         coolant_temp=payload.get("coolant_temp"),
+    #         battery_voltage=payload.get("battery_voltage")
+    #     )
+    #     db.add(new_reading)
+    #     db.commit()
+    #     db.close()
+    #     print(f"✅ Saved telemetry for {vin}")
+    # except Exception as e:
+    #     print(f"Error saving data: {e}")
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
