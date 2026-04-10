@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from contextlib import asynccontextmanager
 from paho.mqtt import client as mqtt_client
 import json
@@ -128,9 +129,18 @@ def configure_alert(vin: str, config: AlertConfigRequest, db: Session = Depends(
     )
     
     db.add(new_alert)
-    db.commit()
-    db.refresh(new_alert)
-    return {"status": "Alert configured successfully", "data": new_alert}
+    
+    try:
+        db.commit()
+        db.refresh(new_alert)
+        return {"status": "Alert configured successfully", "data": new_alert}
+        
+    except IntegrityError:
+        db.rollback() 
+        raise HTTPException(
+            status_code=400, 
+            detail=f"An alert for '{config.metric}' already exists for this vehicle."
+        )
 
 @app.get("/vehicles/{vin}/history")
 def get_telemetry_history(
